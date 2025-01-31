@@ -73,6 +73,9 @@ public class GamePanel extends JPanel implements Runnable {
     BufferedImage potionImage;
     BufferedImage grassTile;
     BufferedImage waterTile;
+    BufferedImage castleImage;
+    BufferedImage castle;
+
     int[][] mapTileNum;
     int potionX, potionY;
 
@@ -99,6 +102,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         loadPotionImage();
         loadTileSet();
+        loadCastleImage();
         generateRandomMap();
         placePotionRandomly();
     }
@@ -151,6 +155,7 @@ public class GamePanel extends JPanel implements Runnable {
         player.update();
         skeletonKing.update();
         AIMage.update();
+
         // Prevent the player from crossing the borders
         if (player.x < 0)
             player.x = 0;
@@ -208,6 +213,28 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
 
+        // // Check skeleton king attack on player
+        // if (!player.dead) {
+        //     if (skeletonKing.isAttacking() && checkCollision(player, skeletonKing)  && !skeletonKing.isAttackRegistered()) {
+        //         player.decreaseHp(10);
+        //         player.hurt = true;
+        //         skeletonKing.setAttackRegistered(true); // Register the attack
+        //         if (player.getHp() <= 0) {
+        //             player.dead = true;
+        //         }
+        //     }//ability
+        //     if (skeletonKing.isAttacking3() && checkCollision(player, skeletonKing)  && !skeletonKing.isAttackRegistered()) {
+        //         player.decreaseHp(30);
+        //         player.hurt = true;
+        //         skeletonKing.setAttackRegistered(true); // Register the attack
+        //         if (player.getHp() <= 0) {
+        //             player.dead = true;
+        //         }
+        //     }
+        //    // player.setAttacking(false);
+        // }
+
+
 
     }
 
@@ -216,11 +243,20 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void loadTileSet() {
-        BufferedImage tileSet = loadImage("/res/tiles/natureTiles.png");
+        BufferedImage tileSet = loadImage("/res/tiles/Castle.png");
         int tileWidth = 32;
         int tileHeight = 32;
-        grassTile = tileSet.getSubimage(1 * tileWidth, 3 * tileHeight, tileWidth, tileHeight);
-        waterTile = tileSet.getSubimage(2 * tileWidth, 3 * tileHeight, tileWidth, tileHeight);
+        grassTile = tileSet.getSubimage(0 * tileWidth, 11 * tileHeight, tileWidth, tileHeight);
+        waterTile = tileSet.getSubimage(0 * tileWidth, 11 * tileHeight, tileWidth, tileHeight);
+    }
+
+    public void loadCastleImage() {  // w 256 h 336
+        BufferedImage cset = loadImage("/res/tiles/tileset.png");
+        int castleX = 33; // x-coordinate of the top-left corner of the castle
+        int castleY = 247; // y-coordinate of the top-left corner of the castle
+        int castleWidth = 45; // width of the castle
+        int castleHeight = 40; // height of the castle
+        castleImage = cset.getSubimage(castleX, castleY, castleWidth, castleHeight);
     }
 
     public void generateRandomMap() {
@@ -303,6 +339,16 @@ public class GamePanel extends JPanel implements Runnable {
                     g2d.drawImage(tileImage, drawX, drawY, tileSize, tileSize, null);
                 }
             }
+        }
+
+        // Draw the castle image at a specific position
+        if (castleImage != null) {
+            int castleX = 1/2 * tileSize; // Example x-coordinate (10 tiles from the left)
+            int castleY = 1/2 * tileSize; // Example y-coordinate (10 tiles from the top)
+            int scaledWidth = castleImage.getWidth() * 7; // Scale width by 2
+            int scaledHeight = castleImage.getHeight() * 7; // Scale height by 2
+           //g2d.drawImage(castleImage, castleDrawX - cameraX, castleDrawY - cameraY, scaledWidth, scaledHeight, null);
+            g2d.drawImage(castleImage, castleX - cameraX, castleY - cameraY, scaledWidth, scaledHeight, null);
         }
 
         // Draw the player

@@ -15,34 +15,54 @@ public class Player extends Entity implements MouseListener {
     BufferedImage[] walkUpFrames;
     BufferedImage[] attackUpFrames;
     BufferedImage[] attack3UpFrames;
+    BufferedImage[] hurtUpFrames;
+    BufferedImage[] deathUpFrames;
+
+
     BufferedImage[] idleDownFrames;
     BufferedImage[] walkDownFrames;
     BufferedImage[] attackDownFrames;
     BufferedImage[] attack3DownFrames;
+    BufferedImage[] hurtDownFrames;
+    BufferedImage[] deathDownFrames;
+
     BufferedImage[] idleLeftFrames;
     BufferedImage[] walkLeftFrames;
     BufferedImage[] attackLeftFrames;
     BufferedImage[] attack3LeftFrames;
+    BufferedImage[] hurtLeftFrames;
+    BufferedImage[] deathLeftFrames;
+
     BufferedImage[] idleRightFrames;
     BufferedImage[] walkRightFrames;
     BufferedImage[] attackRightFrames;
     BufferedImage[] attack3RightFrames;
+    BufferedImage[] hurtRightFrames;
+    BufferedImage[] deathRightFrames;
+
     int frameIndex = 0;
     int frameCount = 8; // Number of frames in the idle and walk animations
     int frameDelay = 10; // Delay between frames
     int frameTimer = 0;
+    int deathFrameDelay = 20; // Define the deathFrameDelay variable
 
     boolean attacking = false;
     boolean attacking3 = false;
     boolean attackRegistered = false; // Flag 
+    boolean hurt = false; // Flag to indicate if the player is hurt
+
+    boolean dead = false;
+    int hurtTimer = 0; // Timer for hurt state
+    final int hurtDuration = 30; // Duration for hurt state
 
     String direction = "down"; // Default direction
     int mana = 100; // Default mana
     
     int deathTimer = 0;
-    final int deathDuration = 50;
-    int hp = 100; // Default health
-    final int maxHp = 100; // Maximum health
+    final int deathDuration = 30;
+
+    int hp = 100; 
+    final int maxHp = 100;
 
     public Player(GamePanel gamePanel, KeyHandler keyHandler) {
         this.gamePanel = gamePanel;
@@ -73,7 +93,7 @@ public class Player extends Entity implements MouseListener {
         x = 100;
         y = 100;
         speed = 4;
-        mana = 100; // Initialize mana
+        mana = 100; 
     }
 
     public void getPlayerImage() {
@@ -95,6 +115,18 @@ public class Player extends Entity implements MouseListener {
 
     public void setAttackRegistered(boolean attackRegistered) {
         this.attackRegistered = attackRegistered;
+    }
+
+    public void hurt(int damage) {
+        if (!hurt && !dead) {
+            decreaseHp(damage);
+            hurt = true;
+            frameIndex = 0; // Reset frame index for hurt animation
+            if (hp <= 0) {
+                dead = true;
+                frameIndex = 0; // Reset frame index for death animation
+            }
+        }
     }
 
     public void update() {
@@ -133,9 +165,60 @@ public class Player extends Entity implements MouseListener {
 
         // Update frame index for animation
         frameTimer++;
-        if (frameTimer >= frameDelay) {
-            frameIndex = (frameIndex + 1) % frameCount;
-            frameTimer = 0;
+        if (dead) {
+            if (frameTimer >= deathFrameDelay) {
+                frameIndex = (frameIndex + 1) % frameCount;
+                frameTimer = 0;
+            }
+        } else {
+            if (frameTimer >= frameDelay) {
+                frameIndex = (frameIndex + 1) % frameCount;
+                frameTimer = 0;
+            }
+        }
+
+        // Reset hurt state if animation is complete
+        BufferedImage[] hurtFrames = null;
+        switch (direction) {
+            case "up":
+                hurtFrames = hurtUpFrames;
+                break;
+            case "down":
+                hurtFrames = hurtDownFrames;
+                break;
+            case "left":
+                hurtFrames = hurtLeftFrames;
+                break;
+            case "right":
+                hurtFrames = hurtRightFrames;
+                break;
+        }
+        if (hurt && hurtFrames != null && frameIndex == hurtFrames.length - 1) {
+            hurt = false;
+        }
+
+        // Reset dead state if animation is complete
+        BufferedImage[] deathFrames = null;
+        switch (direction) {
+            case "up":
+                deathFrames = deathUpFrames;
+                
+                break;
+            case "down":
+                deathFrames = deathDownFrames;
+                
+                break;
+            case "left":
+                deathFrames = deathLeftFrames;
+                
+                break;
+            case "right":
+                deathFrames = deathRightFrames;
+               
+                break;
+        }
+        if (dead && deathFrames != null && frameIndex == deathFrames.length - 1) {
+            disappearing = true;
         }
 
         // Reset attacking state if animation is complete
@@ -178,8 +261,20 @@ public class Player extends Entity implements MouseListener {
         if (attacking3 && attack3Frames != null && frameIndex == attack3Frames.length - 1) {
             attacking3 = false;
             attackRegistered = false; // Reset the attack registered flag
-        }     
+        }   
+        
+        // Handle hurt logic
+    if (hurt) {
+        hurtTimer++;
+        if (hurtTimer >= hurtDuration) {
+            hurt = false;
+            hurtTimer = 0;
+        }
     }
+        
+    }
+
+    
 
     public boolean checkCollisionWithSkeletonKing() {
         int playerWidth = gamePanel.tileSize;
@@ -196,55 +291,74 @@ public class Player extends Entity implements MouseListener {
         mana = Math.min(mana + amount, 100); // Increase mana by the specified amount, up to a maximum of 100
     }
 
+
+    
+
     public void draw(Graphics2D g2d) {
         BufferedImage image = null;
 
         // Determine which image to draw based on player state and direction
         switch (direction) {
             case "up":
-                if (attacking) {
-                    image = attackUpFrames != null ? attackUpFrames[frameIndex % attackUpFrames.length] : null;
-                } else if (attacking3) {
-                    image = attack3UpFrames != null ? attack3UpFrames[frameIndex % attack3UpFrames.length] : null;
-                } else if (!keyHandler.leftPressed && !keyHandler.rightPressed && !keyHandler.upPressed && !keyHandler.downPressed) {
-                    image = idleUpFrames != null ? idleUpFrames[frameIndex % idleUpFrames.length] : null;
-                } else {
-                    image = walkUpFrames != null ? walkUpFrames[frameIndex % walkUpFrames.length] : null;
-                }
-                break;
-            case "down":
-                if (attacking) {
-                    image = attackDownFrames != null ? attackDownFrames[frameIndex % attackDownFrames.length] : null;
-                } else if (attacking3) {
-                    image = attack3DownFrames != null ? attack3DownFrames[frameIndex % attack3DownFrames.length] : null;
-                } else if (!keyHandler.leftPressed && !keyHandler.rightPressed && !keyHandler.upPressed && !keyHandler.downPressed) {
-                    image = idleDownFrames != null ? idleDownFrames[frameIndex % idleDownFrames.length] : null;
-                } else {
-                    image = walkDownFrames != null ? walkDownFrames[frameIndex % walkDownFrames.length] : null;
-                }
-                break;
-            case "left":
-                if (attacking) {
-                    image = attackLeftFrames != null ? attackLeftFrames[frameIndex % attackLeftFrames.length] : null;
-                } else if (attacking3) {
-                    image = attack3LeftFrames != null ? attack3LeftFrames[frameIndex % attack3LeftFrames.length] : null;
-                } else if (!keyHandler.leftPressed && !keyHandler.rightPressed && !keyHandler.upPressed && !keyHandler.downPressed) {
-                    image = idleLeftFrames != null ? idleLeftFrames[frameIndex % idleLeftFrames.length] : null;
-                } else {
-                    image = walkLeftFrames != null ? walkLeftFrames[frameIndex % walkLeftFrames.length] : null;
-                }
-                break;
-            case "right":
-                if (attacking) {
-                    image = attackRightFrames != null ? attackRightFrames[frameIndex % attackRightFrames.length] : null;
-                } else if (attacking3) {
-                    image = attack3RightFrames != null ? attack3RightFrames[frameIndex % attack3RightFrames.length] : null;
-                } else if (!keyHandler.leftPressed && !keyHandler.rightPressed && !keyHandler.upPressed && !keyHandler.downPressed) {
-                    image = idleRightFrames != null ? idleRightFrames[frameIndex % idleRightFrames.length] : null;
-                } else {
-                    image = walkRightFrames != null ? walkRightFrames[frameIndex % walkRightFrames.length] : null;
-                }
-                break;
+            if (dead) {
+                image = deathUpFrames != null ? deathUpFrames[frameIndex % deathUpFrames.length] : null;
+            } else if (hurt) {
+                image = hurtUpFrames != null ? hurtUpFrames[frameIndex % hurtUpFrames.length] : null;
+            } else if (attacking) {
+                image = attackUpFrames != null ? attackUpFrames[frameIndex % attackUpFrames.length] : null;
+            } else if (attacking3) {
+                image = attack3UpFrames != null ? attack3UpFrames[frameIndex % attack3UpFrames.length] : null;
+            } else if (!keyHandler.leftPressed && !keyHandler.rightPressed && !keyHandler.upPressed && !keyHandler.downPressed) {
+                image = idleUpFrames != null ? idleUpFrames[frameIndex % idleUpFrames.length] : null;
+            } else {
+                image = walkUpFrames != null ? walkUpFrames[frameIndex % walkUpFrames.length] : null;
+            }
+            break;
+        case "down":
+            if (dead) {
+                image = deathDownFrames != null ? deathDownFrames[frameIndex % deathDownFrames.length] : null;
+            } else if (hurt) {
+                image = hurtDownFrames != null ? hurtDownFrames[frameIndex % hurtDownFrames.length] : null;
+            } else if (attacking) {
+                image = attackDownFrames != null ? attackDownFrames[frameIndex % attackDownFrames.length] : null;
+            } else if (attacking3) {
+                image = attack3DownFrames != null ? attack3DownFrames[frameIndex % attack3DownFrames.length] : null;
+            } else if (!keyHandler.leftPressed && !keyHandler.rightPressed && !keyHandler.upPressed && !keyHandler.downPressed) {
+                image = idleDownFrames != null ? idleDownFrames[frameIndex % idleDownFrames.length] : null;
+            } else {
+                image = walkDownFrames != null ? walkDownFrames[frameIndex % walkDownFrames.length] : null;
+            }
+            break;
+        case "left":
+            if (dead) {
+                image = deathLeftFrames != null ? deathLeftFrames[frameIndex % deathLeftFrames.length] : null;
+            } else if (hurt) {
+                image = hurtLeftFrames != null ? hurtLeftFrames[frameIndex % hurtLeftFrames.length] : null;
+            } else if (attacking) {
+                image = attackLeftFrames != null ? attackLeftFrames[frameIndex % attackLeftFrames.length] : null;
+            } else if (attacking3) {
+                image = attack3LeftFrames != null ? attack3LeftFrames[frameIndex % attack3LeftFrames.length] : null;
+            } else if (!keyHandler.leftPressed && !keyHandler.rightPressed && !keyHandler.upPressed && !keyHandler.downPressed) {
+                image = idleLeftFrames != null ? idleLeftFrames[frameIndex % idleLeftFrames.length] : null;
+            } else {
+                image = walkLeftFrames != null ? walkLeftFrames[frameIndex % walkLeftFrames.length] : null;
+            }
+            break;
+        case "right":
+            if (dead) {
+                image = deathRightFrames != null ? deathRightFrames[frameIndex % deathRightFrames.length] : null;
+            } else if (hurt) {
+                image = hurtRightFrames != null ? hurtRightFrames[frameIndex % hurtRightFrames.length] : null;
+            } else if (attacking) {
+                image = attackRightFrames != null ? attackRightFrames[frameIndex % attackRightFrames.length] : null;
+            } else if (attacking3) {
+                image = attack3RightFrames != null ? attack3RightFrames[frameIndex % attack3RightFrames.length] : null;
+            } else if (!keyHandler.leftPressed && !keyHandler.rightPressed && !keyHandler.upPressed && !keyHandler.downPressed) {
+                image = idleRightFrames != null ? idleRightFrames[frameIndex % idleRightFrames.length] : null;
+            } else {
+                image = walkRightFrames != null ? walkRightFrames[frameIndex % walkRightFrames.length] : null;
+            }
+            break;
         }
 
         // Draw the selected image

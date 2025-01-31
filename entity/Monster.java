@@ -23,6 +23,7 @@ public class Monster extends Entity {
     BufferedImage[] attackLeftFrames;
     BufferedImage[] attackRightFrames;
     BufferedImage[] attackFrames; // Declare attackFrames variable
+    
     BufferedImage[] idleUpFrames;
     BufferedImage[] walkUpFrames;
     BufferedImage[] hurtUpFrames;

@@ -1,10 +1,9 @@
 package entity;
 
-import java.util.Random;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-
+import java.util.Random;
 import main.GamePanel;
 
 public class Monster extends Entity {
@@ -182,7 +181,7 @@ public class Monster extends Entity {
 
         // Remove the monster from the game if it is disappearing
         if (disappearing) {
-            gamePanel.removeMonster(this);
+            gamePanel.remove(Monster.this);
         }
 
 

@@ -20,7 +20,7 @@ public class Warrior extends Player {
             int idleFrameCount = 5;
             int walkFrameCount = 8;
             int attackFrameCount = 6;
-            int attack3FrameCount = 5;
+            int attack3FrameCount = 6;  ///actually attack02
 
             idleDownFrames = new BufferedImage[idleFrameCount];
             walkDownFrames = new BufferedImage[walkFrameCount];
@@ -30,7 +30,7 @@ public class Warrior extends Player {
             loadFrames(idleDownFrames, "/res/player/warrior/Down/WarriorDownIdle.png", idleFrameCount);
             loadFrames(walkDownFrames, "/res/player/warrior/Down/WarriorDownWalk.png", walkFrameCount);
             loadFrames(attackDownFrames, "/res/player/warrior/Down/WarriorDownAttack01.png", attackFrameCount);
-            loadFrames(attack3DownFrames, "/res/player/warrior/Down/WarriorDownAttack03.png", attack3FrameCount);
+            loadFrames(attack3DownFrames, "/res/player/warrior/Down/WarriorDownAttack02.png", attack3FrameCount);
 
             // Load up frames
             idleUpFrames = new BufferedImage[idleFrameCount];
@@ -41,7 +41,7 @@ public class Warrior extends Player {
             loadFrames(idleUpFrames, "/res/player/warrior/Up/WarriorUpIdle.png", idleFrameCount);
             loadFrames(walkUpFrames, "/res/player/warrior/Up/WarriorUpWalk.png", walkFrameCount);
             loadFrames(attackUpFrames, "/res/player/warrior/Up/WarriorUpAttack01.png", attackFrameCount);
-            loadFrames(attack3UpFrames, "/res/player/warrior/Up/WarriorUpAttack03.png", attack3FrameCount);
+            loadFrames(attack3UpFrames, "/res/player/warrior/Up/WarriorUpAttack02.png", attack3FrameCount);
 
             // Load left frames
             idleLeftFrames = new BufferedImage[idleFrameCount];
@@ -52,7 +52,7 @@ public class Warrior extends Player {
             loadFrames(idleLeftFrames, "/res/player/warrior/Left/WarriorLeftIdle.png", idleFrameCount);
             loadFrames(walkLeftFrames, "/res/player/warrior/Left/WarriorLeftWalk.png", walkFrameCount);
             loadFrames(attackLeftFrames, "/res/player/warrior/Left/WarriorLeftAttack01.png", attackFrameCount);
-            loadFrames(attack3LeftFrames, "/res/player/warrior/Left/WarriorLeftAttack03.png", attack3FrameCount);
+            loadFrames(attack3LeftFrames, "/res/player/warrior/Left/WarriorLeftAttack02.png", attack3FrameCount);
 
             // Load right frames
             idleRightFrames = new BufferedImage[idleFrameCount];
@@ -63,7 +63,7 @@ public class Warrior extends Player {
             loadFrames(idleRightFrames, "/res/player/warrior/Right/WarriorRightIdle.png", idleFrameCount);
             loadFrames(walkRightFrames, "/res/player/warrior/Right/WarriorRightWalk.png", walkFrameCount);
             loadFrames(attackRightFrames, "/res/player/warrior/Right/WarriorRightAttack01.png", attackFrameCount);
-            loadFrames(attack3RightFrames, "/res/player/warrior/Right/WarriorRightAttack03.png", attack3FrameCount);
+            loadFrames(attack3RightFrames, "/res/player/warrior/Right/WarriorRightAttack02.png", attack3FrameCount);
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,11 +1,13 @@
 package main;
 
-import entity.Warrior;
+import entity.AIMage;
 import entity.Entity;
-import entity.Monster;
 import entity.Player;
 import entity.SkeletonKing;
+import entity.Warrior;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -63,6 +65,7 @@ public class GamePanel extends JPanel implements Runnable {
     int fps = 0;
 
     Player player;
+    AIMage AIMage;
     SkeletonKing skeletonKing;
     Thread gameThread;
     KeyHandler keyHandler;
@@ -80,8 +83,20 @@ public class GamePanel extends JPanel implements Runnable {
         this.addKeyListener(keyHandler);
         this.setFocusable(true);
 
+        // Initialize player and mage positions
+        int initialX = 600;
+        int initialY = 700;
+
         player = new Warrior(this, keyHandler);
+        player.x = initialX;
+        player.y = initialY;
+
+        AIMage = new AIMage(this);
+        AIMage.x = initialX + tileSize; // Spawn the mage next to the player
+        AIMage.y = initialY;
+
         skeletonKing = new SkeletonKing(this);
+
         loadPotionImage();
         loadTileSet();
         generateRandomMap();
@@ -135,7 +150,7 @@ public class GamePanel extends JPanel implements Runnable {
         // Update game logic
         player.update();
         skeletonKing.update();
-
+        AIMage.update();
         // Prevent the player from crossing the borders
         if (player.x < 0)
             player.x = 0;
@@ -154,15 +169,15 @@ public class GamePanel extends JPanel implements Runnable {
         // Check for player attack on skeleton king
         if (!skeletonKing.dead) {
             if (player.isAttacking() && checkCollision(player, skeletonKing)  && !player.isAttackRegistered()) {
-                skeletonKing.decreaseHp(10); // Decrease skeleton king's health by 10
+                skeletonKing.decreaseHp(10);
                 skeletonKing.hurt = true;
                 player.setAttackRegistered(true); // Register the attack
                 if (skeletonKing.getHp() <= 0) {
                     skeletonKing.dead = true;
                 }
-            }
+            }//ability
             if (player.isAttacking3() && checkCollision(player, skeletonKing)  && !player.isAttackRegistered()) {
-                skeletonKing.decreaseHp(30); // Decrease skeleton king's health by 30
+                skeletonKing.decreaseHp(30);
                 skeletonKing.hurt = true;
                 player.setAttackRegistered(true); // Register the attack
                 if (skeletonKing.getHp() <= 0) {
@@ -171,6 +186,29 @@ public class GamePanel extends JPanel implements Runnable {
             }
            // player.setAttacking(false);
         }
+
+        // Check for player attack on mage
+        if (!AIMage.dead) {
+            if (player.isAttacking() && checkCollision(player, AIMage)  && !player.isAttackRegistered()) {
+                AIMage.decreaseHp(4); 
+                AIMage.hurt = true;
+                player.setAttackRegistered(true); // Register the attack
+                if (AIMage.getHp() <= 0) {
+                    AIMage.dead = true;
+                }
+            }
+            //ability
+            if (player.isAttacking3() && checkCollision(player, AIMage)  && !player.isAttackRegistered()) {
+                AIMage.decreaseHp(25);
+                AIMage.hurt = true;
+                player.setAttackRegistered(true); 
+                if (AIMage.getHp() <= 0) {
+                    AIMage.dead = true;
+                }
+            }
+        }
+
+
     }
 
     public void loadPotionImage() {
@@ -215,28 +253,36 @@ public class GamePanel extends JPanel implements Runnable {
 
     public boolean checkCollision(Entity entity1, Entity entity2) {
         int solidWidth = tileSize / 2;
-    int solidHeight = tileSize * 3 / 4;
+        int solidHeight = tileSize * 3 / 4;
 
-    int entity1Left = entity1.x + tileSize / 4;
-    int entity1Right = entity1Left + solidWidth;
-    int entity1Top = entity1.y + tileSize / 4;
-    int entity1Bottom = entity1Top + solidHeight;
+        int entity1Left = entity1.x + tileSize / 4;
+        int entity1Right = entity1Left + solidWidth;
+        int entity1Top = entity1.y + tileSize / 4;
+        int entity1Bottom = entity1Top + solidHeight;
 
-    int entity2Left = entity2.x + tileSize / 4;
-    int entity2Right = entity2Left + solidWidth;
-    int entity2Top = entity2.y + tileSize / 4;
-    int entity2Bottom = entity2Top + solidHeight;
+        int entity2Left = entity2.x + tileSize / 4;
+        int entity2Right = entity2Left + solidWidth;
+        int entity2Top = entity2.y + tileSize / 4;
+        int entity2Bottom = entity2Top + solidHeight;
 
-    return entity1Right > entity2Left &&
-           entity1Left < entity2Right &&
-           entity1Bottom > entity2Top &&
-           entity1Top < entity2Bottom;
+        return entity1Right > entity2Left &&
+            entity1Left < entity2Right &&
+            entity1Bottom > entity2Top &&
+            entity1Top < entity2Bottom;
     }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         // Draw game objects
         Graphics2D g2d = (Graphics2D) g;
+
+        //DEBUG1 : how long it takes to draw
+        long drawStart =0;
+        if (keyHandler.checkDrawTime == true) {
+        drawStart = System.nanoTime();  
+        }
+
 
         // Calculate camera position
         int cameraX = player.x - screenWidth / 2 + tileSize / 2;
@@ -245,6 +291,9 @@ public class GamePanel extends JPanel implements Runnable {
         // Draw the map
         for (int col = 0; col < maxMapCol; col++) {
             for (int row = 0; row < maxMapRow; row++) {
+                //DEBUGa
+            // System.out.println("col: " + col + ", row: " + row + ", maxMapCol: " + maxMapCol + ", maxMapRow: " + maxMapRow);
+
                 int drawX = col * tileSize - cameraX;
                 int drawY = row * tileSize - cameraY;
 
@@ -260,11 +309,14 @@ public class GamePanel extends JPanel implements Runnable {
         player.draw(g2d);
 
         // Draw the skeleton king
-       
-            int drawSkeletonKingX = skeletonKing.x - cameraX;
-            int drawSkeletonKingY = skeletonKing.y - cameraY;
-            skeletonKing.draw(g2d, drawSkeletonKingX, drawSkeletonKingY);
-       
+        int drawSkeletonKingX = skeletonKing.x - cameraX;
+        int drawSkeletonKingY = skeletonKing.y - cameraY;
+        skeletonKing.draw(g2d, drawSkeletonKingX, drawSkeletonKingY);
+    
+        // draw aimage 
+        int drawAIMageX = AIMage.x - cameraX;
+        int drawAIMageY = AIMage.y - cameraY;
+        AIMage.draw(g2d, drawAIMageX, drawAIMageY);
         
 
         // Draw the mana potion
@@ -278,28 +330,50 @@ public class GamePanel extends JPanel implements Runnable {
             int drawPotionX = potionX - cameraX;
             int drawPotionY = potionY - cameraY;
             g2d.drawImage(manaPotion, drawPotionX, drawPotionY, tileSize, tileSize, null); // Scale the potion to the
-                                                                                           // tile size
+                                                                                        // tile size
         }
 
-        // Draw FPS
+            // Draw FPS
         g2d.drawString("FPS: " + fps, 10, 10);
 
+        //DEBUG1
+        if (keyHandler.checkDrawTime == true) {
+            long drawEnd = System.nanoTime();
+            long passed = drawEnd - drawStart;
+
+            g2d.setColor(Color.black);
+            g2d.setFont(new Font("Arial", Font.PLAIN, 20));
+            g2d.drawString("Draw time :" + passed, 10, 400);
+            System.out.println("draw time : " + passed);
+        }
+            
         g2d.dispose();
+
     }
 
     public BufferedImage loadImage(String path) {
         BufferedImage image = null;
         try {
+            System.out.println("Attempting to load image from path: " + path);
             image = ImageIO.read(getClass().getResourceAsStream(path));
+            //DEBUG
+            if (image == null) {
+                throw new IOException("Image not found: " + path);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return image;
     }
 
-    public void removeMonster(Monster monster) {
-        monster.dead = true;
-        monster.disappearing = true;
-        monster = null;
+    public void remove(Entity e) {
+        e.dead = true;
+        e.disappearing = true;
+        e = null;
+    }
 }
-}
+/*public void remove(Entity e) {
+        e.dead = true;
+        e.disappearing = true;
+        e = null;
+    } */

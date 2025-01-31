@@ -2,12 +2,11 @@ package entity;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-
-import main.GamePanel;
-import main.KeyHandler;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import main.GamePanel;
+import main.KeyHandler;
 
 public class Player extends Entity implements MouseListener {
     GamePanel gamePanel;
@@ -32,12 +31,16 @@ public class Player extends Entity implements MouseListener {
     int frameCount = 8; // Number of frames in the idle and walk animations
     int frameDelay = 10; // Delay between frames
     int frameTimer = 0;
+
     boolean attacking = false;
     boolean attacking3 = false;
     boolean attackRegistered = false; // Flag 
+
     String direction = "down"; // Default direction
     int mana = 100; // Default mana
-
+    
+    int deathTimer = 0;
+    final int deathDuration = 50;
     int hp = 100; // Default health
     final int maxHp = 100; // Maximum health
 
@@ -114,6 +117,19 @@ public class Player extends Entity implements MouseListener {
         if (y < 0) y = 0;
         if (x > gamePanel.getMaxMapCol() * gamePanel.getTileSize() - gamePanel.getTileSize()) x = gamePanel.getMaxMapCol() * gamePanel.getTileSize() - gamePanel.getTileSize();
         if (y > gamePanel.getMaxMapRow() * gamePanel.tileSize - gamePanel.tileSize) y = gamePanel.getMaxMapRow() * gamePanel.tileSize - gamePanel.tileSize;
+
+        // death
+        if (dead && !disappearing) {
+            deathTimer++;
+            
+            if (deathTimer >= deathDuration) {
+                disappearing = true;
+            }
+        }
+
+        if (disappearing) {
+            gamePanel.remove(Player.this);
+        }
 
         // Update frame index for animation
         frameTimer++;

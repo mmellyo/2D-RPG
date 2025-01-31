@@ -8,7 +8,8 @@ public class Entity {
     public BufferedImage idle, walk, attack1;
     public boolean isMoving, isAttacking;
     public int direction;
-    
+    public boolean dead;
+    public boolean disappearing;
 
 }
 

@@ -9,6 +9,8 @@ public class Main {
         window.setResizable(false);
         window.setTitle("Hunter");
 
+        
+
         GamePanel gamePanel = new GamePanel();
         window.add(gamePanel);
         window.pack();

@@ -198,43 +198,53 @@ public class GamePanel extends JPanel implements Runnable {
                 AIMage.decreaseHp(4); 
                 AIMage.hurt = true;
                 player.setAttackRegistered(true); // Register the attack
+                
                 if (AIMage.getHp() <= 0) {
                     AIMage.dead = true;
                 }
+            
             }
             //ability
-            if (player.isAttacking3() && checkCollision(player, AIMage)  && !player.isAttackRegistered()) {
+            if (player.isAttacking3() && checkCollision(player, AIMage) && !player.isAttackRegistered() ) {
                 AIMage.decreaseHp(25);
                 AIMage.hurt = true;
                 player.setAttackRegistered(true); 
+                
                 if (AIMage.getHp() <= 0) {
                     AIMage.dead = true;
                 }
+           
             }
+
         }
 
-        // // Check skeleton king attack on player
-        // if (!player.dead) {
-        //     if (skeletonKing.isAttacking() && checkCollision(player, skeletonKing)  && !skeletonKing.isAttackRegistered()) {
-        //         player.decreaseHp(10);
-        //         player.hurt = true;
-        //         skeletonKing.setAttackRegistered(true); // Register the attack
-        //         if (player.getHp() <= 0) {
-        //             player.dead = true;
-        //         }
-        //     }//ability
-        //     if (skeletonKing.isAttacking3() && checkCollision(player, skeletonKing)  && !skeletonKing.isAttackRegistered()) {
-        //         player.decreaseHp(30);
-        //         player.hurt = true;
-        //         skeletonKing.setAttackRegistered(true); // Register the attack
-        //         if (player.getHp() <= 0) {
-        //             player.dead = true;
-        //         }
-        //     }
-        //    // player.setAttacking(false);
-        // }
+        // Check skeleton king attack on player
+        if (!player.isDead()) {
+            if (skeletonKing.isAttacking() && checkCollision(player, skeletonKing) && !skeletonKing.isAttackRegistered() ) {
+                //debug
+                System.out.println("hurt BEFORE sethurt : " + player.isHurt());
 
+                player.setHurt(true);
+                skeletonKing.setAttackRegistered(false);
 
+                //debug
+                System.out.println("hurt AFTER sethurt : " + player.isHurt());
+
+                // if (player.getHp() <= 0) {
+                //     player.dead = true;
+                // }
+
+            }
+            if (player.isHurt() && player.getFrameIndex() == 4) {
+                System.out.println("Forcing hurt to false.");
+                player.setHurt(false);
+                
+            }
+            //
+
+        }
+        //debug
+        System.out.println("AFTER COLLISION : " + player.isHurt());
 
     }
 
@@ -259,6 +269,7 @@ public class GamePanel extends JPanel implements Runnable {
         castleImage = cset.getSubimage(castleX, castleY, castleWidth, castleHeight);
     }
 
+    //not used anymore ig
     public void generateRandomMap() {
         Random rand = new Random();
         mapTileNum = new int[maxMapCol][maxMapRow];
@@ -411,6 +422,11 @@ public class GamePanel extends JPanel implements Runnable {
         }
         return image;
     }
+
+    // public void playHurtAnimation() {
+    //     // Implement the hurt animation logic here
+    //     System.out.println("Playing hurt animation!!!!!!!!!!!!!");
+    // }
 
     public void remove(Entity e) {
         e.dead = true;

@@ -62,6 +62,9 @@ public class Monster extends Entity {
     int mana = 100; // Default mana
     int moveDelay = 0; // Delay counter for movement
     final int moveDelayDuration = 30; // Delay duration in frames
+
+    boolean attacking = false;
+    boolean attackRegistered = false; 
     
     public void setDefaultValues() {
         x = 200;
@@ -85,6 +88,19 @@ public class Monster extends Entity {
 
         return hp;
 
+    }
+
+    public boolean isAttacking(){
+        return attacking;
+    }
+
+    public boolean isAttackRegistered() {
+
+        return attackRegistered;
+    }
+
+    public void setAttackRegistered(boolean attackRegistered) {
+        this.attackRegistered = attackRegistered;
     }
 
     public void getMonsterImage() {
@@ -128,14 +144,20 @@ public class Monster extends Entity {
 
                 // Handle attack logic
                 if (attackTimer > 0) {
+                    attacking = true;
+                    //gamePanel.getPlayer().setHurt(true);
+                    //frameIndex = 0; // Reset frame index for hurt animation
                     attackTimer--;
                 } else if (mana >= manaCost && gamePanel.checkCollision(this, gamePanel.getPlayer())) {
+                    attacking = true;
+                    //frameIndex = 0; // Reset frame index for hurt animation
                     attackTimer = attackCooldown; // Reset attack timer
                     mana -= manaCost; // Consume mana
                     gamePanel.getPlayer().decreaseHp(attackDamage); // Decrease player's health by attack damage
                 }
             } else {
                 aggro = false; // Stop following the player after aggro duration
+                attacking = false;
             }
         } else {
             // Handle random movement logic

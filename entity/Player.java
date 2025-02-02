@@ -113,23 +113,54 @@ public class Player extends Entity implements MouseListener {
         return attackRegistered;
     }
 
+    public boolean isDead() {
+
+        return this.dead;
+
+    }
+
+    public void setHurt(boolean hurt) {
+        // if (hurt) {
+        //     frameIndex = 0;
+        //     frameTimer = 0;
+        //     hurtTimer = 0;
+        // }
+        this.hurt = hurt;
+    }
+
+    public boolean isHurt() {
+
+        return this.hurt;
+
+
+    }
+
+    public int getFrameIndex() {
+
+        return frameIndex;
+    }
+
+   
+
     public void setAttackRegistered(boolean attackRegistered) {
         this.attackRegistered = attackRegistered;
     }
 
-    public void hurt(int damage) {
-        if (!hurt && !dead) {
-            decreaseHp(damage);
-            hurt = true;
-            frameIndex = 0; // Reset frame index for hurt animation
-            if (hp <= 0) {
-                dead = true;
-                frameIndex = 0; // Reset frame index for death animation
-            }
-        }
-    }
+    // public void hurt(int damage) {
+    //     if (!dead) {
+    //         decreaseHp(damage);
+    //         hurt = true;
+    //         frameIndex = 0; // Reset frame index for hurt animation
+    //         if (hp <= 0) {
+    //             dead = true;
+    //             frameIndex = 0; // Reset frame index for death animation
+    //         }
+    //     }
+    // }
 
     public void update() {
+
+
         if (keyHandler.leftPressed) {
             x -= speed;
             direction = "left";
@@ -144,24 +175,13 @@ public class Player extends Entity implements MouseListener {
             direction = "down";
         }
 
+
         // Prevent the player from crossing the borders
         if (x < 0) x = 0;
         if (y < 0) y = 0;
         if (x > gamePanel.getMaxMapCol() * gamePanel.getTileSize() - gamePanel.getTileSize()) x = gamePanel.getMaxMapCol() * gamePanel.getTileSize() - gamePanel.getTileSize();
         if (y > gamePanel.getMaxMapRow() * gamePanel.tileSize - gamePanel.tileSize) y = gamePanel.getMaxMapRow() * gamePanel.tileSize - gamePanel.tileSize;
 
-        // death
-        if (dead && !disappearing) {
-            deathTimer++;
-            
-            if (deathTimer >= deathDuration) {
-                disappearing = true;
-            }
-        }
-
-        if (disappearing) {
-            gamePanel.remove(Player.this);
-        }
 
         // Update frame index for animation
         frameTimer++;
@@ -177,25 +197,23 @@ public class Player extends Entity implements MouseListener {
             }
         }
 
-        // Reset hurt state if animation is complete
-        BufferedImage[] hurtFrames = null;
-        switch (direction) {
-            case "up":
-                hurtFrames = hurtUpFrames;
-                break;
-            case "down":
-                hurtFrames = hurtDownFrames;
-                break;
-            case "left":
-                hurtFrames = hurtLeftFrames;
-                break;
-            case "right":
-                hurtFrames = hurtRightFrames;
-                break;
+       // frameTimer++;
+        
+        // Hurt animation handling
+        if (hurt) {//debug DONE
+           // System.out.println("1////////// Hurt animation is running. Frame: " + frameIndex);
+            BufferedImage[] hurtFrames = null;
+            switch (direction) {
+                case "up": hurtFrames = hurtUpFrames; break;
+                case "down": hurtFrames = hurtDownFrames; break;
+                case "left": hurtFrames = hurtLeftFrames; break;
+                case "right": hurtFrames = hurtRightFrames; break;
+            }if (hurtFrames != null && frameIndex == hurtFrames.length - 1) {
+                hurt = false;
+            }           
         }
-        if (hurt && hurtFrames != null && frameIndex == hurtFrames.length - 1) {
-            hurt = false;
-        }
+        
+        
 
         // Reset dead state if animation is complete
         BufferedImage[] deathFrames = null;
@@ -221,6 +239,8 @@ public class Player extends Entity implements MouseListener {
             disappearing = true;
         }
 
+
+
         // Reset attacking state if animation is complete
         BufferedImage[] attackFrames = null;
         switch (direction) {
@@ -242,6 +262,8 @@ public class Player extends Entity implements MouseListener {
             attackRegistered = false; // Reset the attack registered flag
         }
 
+
+
         // Reset attacking3 state if animation is complete
         BufferedImage[] attack3Frames = null;
         switch (direction) {
@@ -262,15 +284,6 @@ public class Player extends Entity implements MouseListener {
             attacking3 = false;
             attackRegistered = false; // Reset the attack registered flag
         }   
-        
-        // Handle hurt logic
-    if (hurt) {
-        hurtTimer++;
-        if (hurtTimer >= hurtDuration) {
-            hurt = false;
-            hurtTimer = 0;
-        }
-    }
         
     }
 
@@ -301,7 +314,7 @@ public class Player extends Entity implements MouseListener {
         switch (direction) {
             case "up":
             if (dead) {
-                image = deathUpFrames != null ? deathUpFrames[frameIndex % deathUpFrames.length] : null;
+                image = deathUpFrames != null ? deathUpFrames[frameIndex % deathUpFrames.length] : null;  // ensures that the frame index wraps around if it exceeds the number of frames available
             } else if (hurt) {
                 image = hurtUpFrames != null ? hurtUpFrames[frameIndex % hurtUpFrames.length] : null;
             } else if (attacking) {
@@ -363,11 +376,11 @@ public class Player extends Entity implements MouseListener {
 
         // Draw the selected image
         if (image != null) {
-            int drawWidth = gamePanel.tileSize * 2; // Adjust the multiplier to make the character bigger
-            int drawHeight = gamePanel.tileSize * 2; // Adjust the multiplier to make the character bigger
+            int drawWidth = gamePanel.tileSize * 2; //make the character bigger
+            int drawHeight = gamePanel.tileSize * 2; // character bigger
             g2d.drawImage(image, gamePanel.getScreenWidth() / 2 - drawWidth / 2, gamePanel.getScreenHeight() / 2 - drawHeight / 2, drawWidth, drawHeight, null);
         } else {
-            // Fallback to a default rectangle if no image is available
+            // DEBUG : default rectangle if no image is available
             g2d.setColor(Color.white);
             g2d.fillRect(gamePanel.getScreenWidth() / 2 - gamePanel.tileSize / 2, gamePanel.getScreenHeight() / 2 - gamePanel.tileSize / 2, gamePanel.tileSize, gamePanel.tileSize);
         }
@@ -383,6 +396,10 @@ public class Player extends Entity implements MouseListener {
         g2d.setColor(Color.white);
         g2d.drawRect(10, 30, 200, 10); // Outline for the mana bar
     }
+
+
+    
+
 
     @Override
     public void mouseClicked(MouseEvent e) {

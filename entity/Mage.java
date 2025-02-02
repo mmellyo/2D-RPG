@@ -158,7 +158,7 @@ public class Mage extends Entity {
 
                     //if mage attacked 5 times => use ability for bigger damage
                     if (attackCount % 5 == 0 && mana >= abilityManaCost) {
-                        mana -= abilityManaCost;
+                        
                         gamePanel.getPlayer().decreaseHp(manaDamage); // Decrease player's health by attack damage
 
                         BufferedImage[] tempattackUpFrames = attackUpFrames;
@@ -180,6 +180,7 @@ public class Mage extends Entity {
                                 attackRightFrames = abilityRightFrames;
                                 break;
                         }
+                        
 
                         // Schedule a reset back to normal attack frames after 500ms
                         new java.util.Timer().schedule(new java.util.TimerTask() {
@@ -202,7 +203,7 @@ public class Mage extends Entity {
                             }
                          }, 1500); //delay before switching back to normal attack
 
-
+                            mana -= abilityManaCost;
                       // Reset to defaukt attck after using ability
                       frameTimer = 0;
                       frameIndex = 0;

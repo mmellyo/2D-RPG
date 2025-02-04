@@ -27,8 +27,8 @@ public class GamePanel extends JPanel implements Runnable {
     final int screenHeight = tileSize * maxScreenRow; // 576 pixels
 
     // Map settings
-    final int maxMapCol = 30;
-    final int maxMapRow = 30;
+    final int maxMapCol = 50;
+    final int maxMapRow = 50;
     public Player getPlayer() {
 
         return player;
@@ -174,7 +174,7 @@ public class GamePanel extends JPanel implements Runnable {
         // Check for player attack on skeleton king
         if (!skeletonKing.dead) {
             if (player.isAttacking() && checkCollision(player, skeletonKing)  && !player.isAttackRegistered()) {
-                skeletonKing.decreaseHp(10);
+                skeletonKing.decreaseHp(20);
                 skeletonKing.hurt = true;
                 player.setAttackRegistered(true); // Register the attack
                 if (skeletonKing.getHp() <= 0) {
@@ -182,7 +182,7 @@ public class GamePanel extends JPanel implements Runnable {
                 }
             }//ability
             if (player.isAttacking3() && checkCollision(player, skeletonKing)  && !player.isAttackRegistered()) {
-                skeletonKing.decreaseHp(30);
+                skeletonKing.decreaseHp(35);
                 skeletonKing.hurt = true;
                 player.setAttackRegistered(true); // Register the attack
                 if (skeletonKing.getHp() <= 0) {
@@ -221,30 +221,31 @@ public class GamePanel extends JPanel implements Runnable {
         // Check skeleton king attack on player
         if (!player.isDead()) {
             if (skeletonKing.isAttacking() && checkCollision(player, skeletonKing) && !skeletonKing.isAttackRegistered() ) {
+                
                 //debug
-                System.out.println("hurt BEFORE sethurt : " + player.isHurt());
+                System.out.println("player hurt BEFORE the 'set' is : " + player.isHurtByMonster());
 
-                player.setHurt(true);
+                player.setHurtByMonster(true);
                 skeletonKing.setAttackRegistered(false);
 
                 //debug
-                System.out.println("hurt AFTER sethurt : " + player.isHurt());
-
-                // if (player.getHp() <= 0) {
-                //     player.dead = true;
-                // }
+                System.out.println("player hurt AFTER the 'set' is : " + player.isHurtByMonster());
 
             }
-            if (player.isHurt() && player.getFrameIndex() == 4) {
+            if (player.isHurtByMonster() && player.getFrameIndex() == 4) {
                 System.out.println("Forcing hurt to false.");
-                player.setHurt(false);
+                player.setHurtByMonster(false);
                 
             }
-            //
-
         }
+
+        //hp = 0 death logic
+        if (player.getHp() <= 0) {
+            player.setDead(true);
+        }
+
         //debug
-        System.out.println("AFTER COLLISION : " + player.isHurt());
+        System.out.println("AFTER COLLISION : " + player.isHurtByMonster());
 
     }
 
@@ -253,11 +254,11 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void loadTileSet() {
-        BufferedImage tileSet = loadImage("/res/tiles/Castle.png");
+        BufferedImage tileSet = loadImage("/res/tiles/htiles1.png");
         int tileWidth = 32;
         int tileHeight = 32;
-        grassTile = tileSet.getSubimage(0 * tileWidth, 11 * tileHeight, tileWidth, tileHeight);
-        waterTile = tileSet.getSubimage(0 * tileWidth, 11 * tileHeight, tileWidth, tileHeight);
+        grassTile = tileSet.getSubimage(20 * tileWidth, 0 * tileHeight, tileWidth, tileHeight);
+        //waterTile = tileSet.getSubimage(20 * tileWidth, 0 * tileHeight, tileWidth, tileHeight);
     }
 
     public void loadCastleImage() {  // w 256 h 336
@@ -271,15 +272,15 @@ public class GamePanel extends JPanel implements Runnable {
 
     //not used anymore ig
     public void generateRandomMap() {
-        Random rand = new Random();
+       // Random rand = new Random();
         mapTileNum = new int[maxMapCol][maxMapRow];
         for (int col = 0; col < maxMapCol; col++) {
             for (int row = 0; row < maxMapRow; row++) {
-                if (rand.nextInt(10) < 2) { // 20% chance to place water
-                    mapTileNum[col][row] = 1; // Water tile
-                } else {
+                //if (rand.nextInt(10) < 2) { // 20% chance to place water
+                   // mapTileNum[col][row] = 1; // Water tile
+                //} else {
                     mapTileNum[col][row] = 0; // Grass tile
-                }
+               // }
             }
         }
     }
@@ -423,15 +424,18 @@ public class GamePanel extends JPanel implements Runnable {
         return image;
     }
 
-    // public void playHurtAnimation() {
-    //     // Implement the hurt animation logic here
-    //     System.out.println("Playing hurt animation!!!!!!!!!!!!!");
-    // }
+
 
     public void remove(Entity e) {
         e.dead = true;
         e.disappearing = true;
         e = null;
+    }
+
+    public void removePlayer(Player p) {
+        p.setDead(true);
+        p.disappearing = true;
+        p = null;
     }
 }
 /*public void remove(Entity e) {

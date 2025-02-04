@@ -59,10 +59,14 @@ public class Player extends Entity implements MouseListener {
     int mana = 100; // Default mana
     
     int deathTimer = 0;
-    final int deathDuration = 30;
+    final int deathDuration = 40;
 
     int hp = 100; 
     final int maxHp = 100;
+
+    final int messageDuration = 60; //(1s at 60 FPS)
+    boolean abilityWhileAttakMessage = false;
+    int messageTimer = messageDuration;
 
     public Player(GamePanel gamePanel, KeyHandler keyHandler) {
         this.gamePanel = gamePanel;
@@ -89,6 +93,21 @@ public class Player extends Entity implements MouseListener {
         return hp;
     }
 
+    public void setDead(boolean dead) {
+
+        this.dead = dead;
+
+    }
+
+    public boolean isDead() {
+
+        return this.dead;
+
+    }
+
+
+
+    
     public void setDefaultValues() {
         x = 100;
         y = 100;
@@ -113,13 +132,9 @@ public class Player extends Entity implements MouseListener {
         return attackRegistered;
     }
 
-    public boolean isDead() {
 
-        return this.dead;
 
-    }
-
-    public void setHurt(boolean hurt) {
+    public void setHurtByMonster(boolean hurt) {
         // if (hurt) {
         //     frameIndex = 0;
         //     frameTimer = 0;
@@ -128,7 +143,7 @@ public class Player extends Entity implements MouseListener {
         this.hurt = hurt;
     }
 
-    public boolean isHurt() {
+    public boolean isHurtByMonster() {
 
         return this.hurt;
 
@@ -182,6 +197,20 @@ public class Player extends Entity implements MouseListener {
         if (x > gamePanel.getMaxMapCol() * gamePanel.getTileSize() - gamePanel.getTileSize()) x = gamePanel.getMaxMapCol() * gamePanel.getTileSize() - gamePanel.getTileSize();
         if (y > gamePanel.getMaxMapRow() * gamePanel.tileSize - gamePanel.tileSize) y = gamePanel.getMaxMapRow() * gamePanel.tileSize - gamePanel.tileSize;
 
+        // Handle death timer
+        if (dead && !disappearing) {
+            //debug
+            System.out.println("death timeer .......................: " +deathTimer);
+            
+            deathTimer++;
+            
+            if (deathTimer >= deathDuration) {
+                disappearing = true;
+            }
+        }
+        if (disappearing) {
+            gamePanel.removePlayer(this);
+        }
 
         // Update frame index for animation
         frameTimer++;
@@ -196,8 +225,6 @@ public class Player extends Entity implements MouseListener {
                 frameTimer = 0;
             }
         }
-
-       // frameTimer++;
         
         // Hurt animation handling
         if (hurt) {//debug DONE
@@ -217,7 +244,8 @@ public class Player extends Entity implements MouseListener {
 
         // Reset dead state if animation is complete
         BufferedImage[] deathFrames = null;
-        switch (direction) {
+        if(dead) {
+            switch (direction) {
             case "up":
                 deathFrames = deathUpFrames;
                 
@@ -234,11 +262,11 @@ public class Player extends Entity implements MouseListener {
                 deathFrames = deathRightFrames;
                
                 break;
-        }
-        if (dead && deathFrames != null && frameIndex == deathFrames.length - 1) {
-            disappearing = true;
-        }
-
+         }
+            if (dead && deathFrames != null && frameIndex == deathFrames.length - 1) {
+                disappearing = true;
+            }
+         }
 
 
         // Reset attacking state if animation is complete
@@ -284,6 +312,14 @@ public class Player extends Entity implements MouseListener {
             attacking3 = false;
             attackRegistered = false; // Reset the attack registered flag
         }   
+
+        // Update message timer
+        if (abilityWhileAttakMessage) {
+            messageTimer--;
+            if (messageTimer <= 0) {
+                abilityWhileAttakMessage = false;
+            }
+        }
         
     }
 
@@ -308,8 +344,10 @@ public class Player extends Entity implements MouseListener {
     
 
     public void draw(Graphics2D g2d) {
+        if (disappearing) {
+            return; // Do not draw if the player is disappearing
+        }
         BufferedImage image = null;
-
         // Determine which image to draw based on player state and direction
         switch (direction) {
             case "up":
@@ -395,6 +433,13 @@ public class Player extends Entity implements MouseListener {
         g2d.fillRect(10, 30, mana * 2, 10); // Adjust the size and position as needed
         g2d.setColor(Color.white);
         g2d.drawRect(10, 30, 200, 10); // Outline for the mana bar
+
+        // Draw the 'no mana' message
+        if (abilityWhileAttakMessage) {
+            g2d.setColor(Color.black);
+            g2d.setFont(g2d.getFont().deriveFont(18f));
+            g2d.drawString("Can't attack while hurt", 10, 60);
+        }
     }
 
 
@@ -404,17 +449,25 @@ public class Player extends Entity implements MouseListener {
     @Override
     public void mouseClicked(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1 ) {
-            attacking = true;
-            frameIndex = 0; // Reset frame index for attack animation
-            attackRegistered = false; // Reset the attack registered flag
+            if(!isHurtByMonster()) {
+                attacking = true;
+                frameIndex = 0; // Reset frame index for attack animation
+                attackRegistered = false; // Reset the attack registered flag 
+            } else { 
+                System.out.println("player is hurt by monster !!!!!!!!!!!!!!!!!!! cant attack !!!!!!!!!!!!!!!!!!!!!!!!");
+                abilityWhileAttakMessage = true;
+                return;
+            }
             
         } else if (e.getButton() == MouseEvent.BUTTON3 ) {
-            if (mana >= 20) {
-                attacking3 = true;
-                frameIndex = 0; // Reset frame index for attack3 animation
-                attackRegistered = false; // Reset the attack registered flag
-                mana -= 20; // Decrease mana by 20
-                
+            if(!isHurtByMonster()) {
+                if (mana >= 20) {
+                    attacking3 = true;
+                    frameIndex = 0; // Reset frame index for attack3 animation
+                    attackRegistered = false; // Reset the attack registered flag
+                    mana -= 20; // Decrease mana by 20
+                    
+                }
             }
         }
     }

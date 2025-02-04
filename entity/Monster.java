@@ -15,7 +15,7 @@ public class Monster extends Entity {
     }
     int attackCooldown = 60; // Cooldown duration in frames (1 second at 60 FPS)
     int attackTimer = 0;
-    int attackDamage = 10; // Damage dealt by the monster's attack
+    int attackDamage = 5; // Damage dealt by the monster's attack
     int manaCost = 10; // Mana cost for each attack
 
     BufferedImage[] attackUpFrames;
@@ -83,6 +83,8 @@ public class Monster extends Entity {
         }
 
     }
+
+    
 
     public int getHp() {
 

@@ -56,7 +56,7 @@ public class Mage extends Entity {
     int aggroTimer = 0;
 
     //attak
-    int attackCooldown = 60; //Cooldown duration in frames (1s at 60 FPS)
+    int attackCooldown = 90; //Cooldown duration in frames (~1s at 60 FPS)
     int attackTimer = 0;
     int attackDamage = 2; //mage's attack
     int attackCount = 0; //Cnt for the nmbr of attacks

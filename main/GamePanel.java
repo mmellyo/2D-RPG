@@ -83,8 +83,11 @@ public class GamePanel extends JPanel implements Runnable {
     BufferedImage grassTile;
     BufferedImage waterTile;
     BufferedImage castleImage;
+    BufferedImage darkWaterTileL;  //with grass in left
     BufferedImage endGrassTile;
     BufferedImage castle;
+    BufferedImage rockWallTileB;  //with water at bottom
+    BufferedImage endGrass2blcTile; //2 block end grass tile
 
     int[][] mapTileNum;
     int[][] playablemapTileNum;
@@ -99,8 +102,8 @@ public class GamePanel extends JPanel implements Runnable {
         this.setFocusable(true);
 
         // Initialize player and mage positions
-        int initialX = 20 * tileSize; // 20 tiles from the left
-        int initialY = 10 * tileSize; //  40 tiles from the top
+        int initialX = 60 * tileSize; // 20 tiles from the left
+        int initialY = 90 * tileSize; //  40 tiles from the top
 
         player = new Warrior(this, keyHandler);
         player.x = initialX;
@@ -273,6 +276,12 @@ public class GamePanel extends JPanel implements Runnable {
         grassTile = tileSet.getSubimage(20 * tileWidth, 0 * tileHeight, tileWidth, tileHeight);
         waterTile = tileSet.getSubimage(27 * tileWidth, 6 * tileHeight, tileWidth, tileHeight);  //w 864 h 192
         endGrassTile= tileSet.getSubimage(23 * tileWidth, 10 * tileHeight, tileWidth, tileHeight); //w 733 h 319
+        darkWaterTileL = tileSet.getSubimage(26 * tileWidth, 4 * tileHeight, tileWidth, tileHeight); //w 832 h 128
+        endGrass2blcTile = tileSet.getSubimage(23 * tileWidth, 10 * tileHeight, 2 * tileWidth, tileHeight); //w 832 h 128
+
+        BufferedImage tileSet2 = loadImage("/res/tiles/htiles2.png");
+        rockWallTileB = tileSet2.getSubimage(23 * tileWidth, 12 * tileHeight, tileWidth, tileHeight); //w 736 h 384
+
     }
 
     public void loadCastleImage() {  // w 256 h 336
@@ -290,6 +299,9 @@ public class GamePanel extends JPanel implements Runnable {
         // 0 = Grass tile
         // 1 = Water tile
         // 2 = end grass tile 
+        // 3 = dark water tile (with end grass in left)
+        // 4 = rock wall with watter at bottom
+        // 2.1 = 2 blocks ending grass
         
         for ( col = 0; col < totalCols; col++) {
             for ( row = 0; row < totalRows; row++) {
@@ -304,20 +316,34 @@ public class GamePanel extends JPanel implements Runnable {
                 }
 
                 //end grass tiles botttommost line (playable)
-                if (col >= 8 && col < totalCols - 8 && row >= 8 || row == totalRows - 9) {
+                if (col >= 8 && col < totalCols - 13 && row >= 8 || row == totalRows - 9) {
                    mapTileNum[col][maxMapRow] = 2; 
                 }
+
+                 
+
 
                 //GANERATE LEFT OUTER MAP
                 //end grass tiles botttommost line (leftmost outer)
                 if (col < 8 && col < totalCols - 8  /*&&row < 8 || row == totalRows - 8*/) {
                     mapTileNum[col][maxMapRow] = 2;  //end grass tile 
                 }
+
+                // maxMapCol - 2
+                // maxMapRow - 1/4*maxMapRow
                 
-                
+                if (col > maxMapCol - 4 && row >= maxMapRow -  0.125*maxMapRow) { // 1/8 maxrox
+                    mapTileNum[col][row] = 1; //Water tile
+                }
             }
         }
-        
+        //dark end 1
+        mapTileNum[totalCols - 13][maxMapRow - 1 ] = 3;
+        mapTileNum[totalCols - 13][maxMapRow - 2 ] = 4;
+        mapTileNum[totalCols - 13][maxMapRow - 3] = 21;
+
+
+    
     } 
 
     // public void generatePlayableMap() {
@@ -325,10 +351,10 @@ public class GamePanel extends JPanel implements Runnable {
 
     //     for (int col = 0; col < maxMapCol; col++) {
     //         for (int row = 0; row < maxMapRow; row++) {
-    //             playablemapTileNum[col][maxMapRow] = 2;  //end grass tile
+    //             playablemapTileNum[col][maqqxMapRow] = 2;  //end grass tile
 
 
-    //         }
+    //         }ssssss
     //     }
     // }
 
@@ -406,6 +432,20 @@ public class GamePanel extends JPanel implements Runnable {
                         case 2 :
                             tileImage = endGrassTile;
                         break;
+
+                        case 21 :
+                            tileImage = endGrass2blcTile;
+                        break;
+
+                        case 3 :
+                            tileImage = darkWaterTileL;
+                        break;
+                        
+                        case 4 :
+                            tileImage = rockWallTileB;
+                        break;
+
+
                         default:
                             //throw new AssertionError();
                     }

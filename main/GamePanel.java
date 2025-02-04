@@ -27,8 +27,17 @@ public class GamePanel extends JPanel implements Runnable {
     final int screenHeight = tileSize * maxScreenRow; // 576 pixels
 
     // Map settings
-    final int maxMapCol = 50;
-    final int maxMapRow = 50;
+    final int maxMapCol = 70;
+    final int maxMapRow = 100;
+
+    int totalCols = maxMapCol + 8;
+    int totalRows = maxMapRow + 8;
+
+    final int borderThickness = 6; 
+
+
+
+
     public Player getPlayer() {
 
         return player;
@@ -74,9 +83,12 @@ public class GamePanel extends JPanel implements Runnable {
     BufferedImage grassTile;
     BufferedImage waterTile;
     BufferedImage castleImage;
+    BufferedImage endGrassTile;
     BufferedImage castle;
 
     int[][] mapTileNum;
+    int[][] playablemapTileNum;
+
     int potionX, potionY;
 
     public GamePanel() {
@@ -87,8 +99,8 @@ public class GamePanel extends JPanel implements Runnable {
         this.setFocusable(true);
 
         // Initialize player and mage positions
-        int initialX = 600;
-        int initialY = 700;
+        int initialX = 20 * tileSize; // 20 tiles from the left
+        int initialY = 10 * tileSize; //  40 tiles from the top
 
         player = new Warrior(this, keyHandler);
         player.x = initialX;
@@ -103,7 +115,8 @@ public class GamePanel extends JPanel implements Runnable {
         loadPotionImage();
         loadTileSet();
         loadCastleImage();
-        generateRandomMap();
+        generateMap();
+        //generatePlayableMap();
         placePotionRandomly();
     }
 
@@ -157,10 +170,10 @@ public class GamePanel extends JPanel implements Runnable {
         AIMage.update();
 
         // Prevent the player from crossing the borders
-        if (player.x < 0)
-            player.x = 0;
-        if (player.y < 0)
-            player.y = 0;
+        if (player.x < 8 * tileSize )
+            player.x =  8 * tileSize ;
+        if (player.y < 8 * tileSize )
+            player.y =  8 * tileSize ;
         if (player.x > maxMapCol * tileSize - tileSize)
             player.x = maxMapCol * tileSize - tileSize;
         if (player.y > maxMapRow * tileSize - tileSize)
@@ -258,7 +271,8 @@ public class GamePanel extends JPanel implements Runnable {
         int tileWidth = 32;
         int tileHeight = 32;
         grassTile = tileSet.getSubimage(20 * tileWidth, 0 * tileHeight, tileWidth, tileHeight);
-        //waterTile = tileSet.getSubimage(20 * tileWidth, 0 * tileHeight, tileWidth, tileHeight);
+        waterTile = tileSet.getSubimage(27 * tileWidth, 6 * tileHeight, tileWidth, tileHeight);  //w 864 h 192
+        endGrassTile= tileSet.getSubimage(23 * tileWidth, 10 * tileHeight, tileWidth, tileHeight); //w 733 h 319
     }
 
     public void loadCastleImage() {  // w 256 h 336
@@ -270,20 +284,53 @@ public class GamePanel extends JPanel implements Runnable {
         castleImage = cset.getSubimage(castleX, castleY, castleWidth, castleHeight);
     }
 
-    //not used anymore ig
-    public void generateRandomMap() {
-       // Random rand = new Random();
-        mapTileNum = new int[maxMapCol][maxMapRow];
-        for (int col = 0; col < maxMapCol; col++) {
-            for (int row = 0; row < maxMapRow; row++) {
-                //if (rand.nextInt(10) < 2) { // 20% chance to place water
-                   // mapTileNum[col][row] = 1; // Water tile
-                //} else {
-                    mapTileNum[col][row] = 0; // Grass tile
-               // }
+    public void generateMap() {
+        mapTileNum = new int[totalCols][totalRows];
+        int col,row;
+        // 0 = Grass tile
+        // 1 = Water tile
+        // 2 = end grass tile 
+        
+        for ( col = 0; col < totalCols; col++) {
+            for ( row = 0; row < totalRows; row++) {
+
+               //rightmost outer edges to water tiles
+                if ( col >= totalCols - 8 || row >= totalRows - 8) {
+                    mapTileNum[col][row] = 1; //Water tile
+
+                } else {
+                    //Grass tile of playable map + leftmost outer
+                    mapTileNum[col][row] = 0; 
+                }
+
+                //end grass tiles botttommost line (playable)
+                if (col >= 8 && col < totalCols - 8 && row >= 8 || row == totalRows - 9) {
+                   mapTileNum[col][maxMapRow] = 2; 
+                }
+
+                //GANERATE LEFT OUTER MAP
+                //end grass tiles botttommost line (leftmost outer)
+                if (col < 8 && col < totalCols - 8  /*&&row < 8 || row == totalRows - 8*/) {
+                    mapTileNum[col][maxMapRow] = 2;  //end grass tile 
+                }
+                
+                
             }
         }
-    }
+        
+    } 
+
+    // public void generatePlayableMap() {
+    //     playablemapTileNum = new int[maxMapCol][maxMapRow];
+
+    //     for (int col = 0; col < maxMapCol; col++) {
+    //         for (int row = 0; row < maxMapRow; row++) {
+    //             playablemapTileNum[col][maxMapRow] = 2;  //end grass tile
+
+
+    //         }
+    //     }
+    // }
 
     public void placePotionRandomly() {
         Random rand = new Random();
@@ -322,6 +369,7 @@ public class GamePanel extends JPanel implements Runnable {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+
         // Draw game objects
         Graphics2D g2d = (Graphics2D) g;
 
@@ -337,17 +385,30 @@ public class GamePanel extends JPanel implements Runnable {
         int cameraY = player.y - screenHeight / 2 + tileSize / 2;
 
         // Draw the map
-        for (int col = 0; col < maxMapCol; col++) {
-            for (int row = 0; row < maxMapRow; row++) {
-                //DEBUGa
-            // System.out.println("col: " + col + ", row: " + row + ", maxMapCol: " + maxMapCol + ", maxMapRow: " + maxMapRow);
-
+        for (int col = 0; col < totalCols; col++) {
+            for (int row = 0; row < totalRows; row++) {
                 int drawX = col * tileSize - cameraX;
                 int drawY = row * tileSize - cameraY;
 
                 // Only draw tiles that are visible on the screen
                 if (drawX + tileSize > 0 && drawX < screenWidth && drawY + tileSize > 0 && drawY < screenHeight) {
-                    BufferedImage tileImage = (mapTileNum[col][row] == 0) ? grassTile : waterTile;
+                    BufferedImage tileImage = null;
+
+                    switch (mapTileNum[col][row]) {
+                        case 0 :
+                            tileImage = grassTile;
+                            break;
+                        
+                        case 1 :
+                            tileImage = waterTile;
+                        break;
+
+                        case 2 :
+                            tileImage = endGrassTile;
+                        break;
+                        default:
+                            //throw new AssertionError();
+                    }
                     g2d.drawImage(tileImage, drawX, drawY, tileSize, tileSize, null);
                 }
             }

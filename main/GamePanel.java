@@ -27,8 +27,8 @@ public class GamePanel extends JPanel implements Runnable {
     final int screenHeight = tileSize * maxScreenRow; // 576 pixels
 
     // Map settings
-    final int maxMapCol = 70;
-    final int maxMapRow = 100;
+    final int maxMapCol = 40;
+    final int maxMapRow = 50;
 
     int totalCols = maxMapCol + 8;
     int totalRows = maxMapRow + 8;
@@ -94,6 +94,10 @@ public class GamePanel extends JPanel implements Runnable {
     BufferedImage endWallwaterTileR;
     BufferedImage rockWall;
     BufferedImage endWallGrassTileD;
+    BufferedImage endGrasstileRU;
+    BufferedImage waterGrasstileD;
+    BufferedImage bridgeTile;
+    BufferedImage bridgeWoodTile;
 
     int[][] mapTileNum;
     int[][] playablemapTileNum;
@@ -286,6 +290,11 @@ public class GamePanel extends JPanel implements Runnable {
         waterGrasstileR = tileSet.getSubimage(26 * tileWidth, 5 * tileHeight, tileWidth, tileHeight); 
         endWallGrassTileD = tileSet.getSubimage(23 * tileWidth, 13 * tileHeight, tileWidth, tileHeight); 
         rockWall  = tileSet.getSubimage(26 * tileWidth, 7 * tileHeight, tileWidth, tileHeight); 
+        endGrasstileRU = tileSet.getSubimage(21 * tileWidth, 8 * tileHeight, tileWidth, tileHeight);
+        waterGrasstileD = tileSet.getSubimage(29 * tileWidth, 10 * tileHeight, tileWidth, tileHeight);
+        bridgeWoodTile = tileSet.getSubimage(22 * tileWidth, 21 * tileHeight, tileWidth, tileHeight);
+        bridgeTile = tileSet.getSubimage(22 * tileWidth, 20 * tileHeight, tileWidth, tileHeight);
+
 
         BufferedImage tileSet2 = loadImage("/res/tiles/htiles2.png");
         rockWallTileB = tileSet2.getSubimage(23 * tileWidth, 12 * tileHeight, tileWidth, tileHeight); //w 736 h 384
@@ -296,11 +305,11 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void loadCastleImage() {  // w 256 h 336
-        BufferedImage cset = loadImage("/res/tiles/tileset.png");
-        int castleX = 33; // x-coordinate of the top-left corner of the castle
-        int castleY = 247; // y-coordinate of the top-left corner of the castle
-        int castleWidth = 45; // width of the castle
-        int castleHeight = 40; // height of the castle
+        BufferedImage cset = loadImage("/res/tiles/Castle.png");
+        int castleX = 198; // x-coordinate of the top-left corner of the castle
+        int castleY = 0; // y-coordinate of the top-left corner of the castle
+        int castleWidth = 116; // width of the castle
+        int castleHeight = 224; // height of the castle
         castleImage = cset.getSubimage(castleX, castleY, castleWidth, castleHeight);
     }
 
@@ -312,16 +321,20 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     // input : first grass tile 
-    public void RockWallTiles(int colOffset, int rowOffset, boolean withGrass, boolean midWall) {
+    public void RockWallTiles(int colOffset, int rowOffset, boolean withGrass, boolean midWall, boolean isChalal) {
         if (!midWall) {
             mapTileNum[colOffset][rowOffset] = 2; // end grass tile at down
             mapTileNum[colOffset][rowOffset + 1] = 4; // rock wall tile water at bottom
-
-            if (withGrass) {
-                mapTileNum[colOffset][rowOffset + 2] = 3; // dark water tile (with end grass in left)
+            if(isChalal) {
+                
             } else {
-                mapTileNum[colOffset][rowOffset + 2] = 11; // end water
-            }   
+                if (withGrass) {
+                    mapTileNum[colOffset][rowOffset + 2] = 3; // dark water tile (with end grass in left)
+                } else {
+                    mapTileNum[colOffset][rowOffset + 2] = 11; // end water
+                }
+            }
+            
         } else {
             mapTileNum[colOffset][rowOffset] = 2; // end grass tile at down
             mapTileNum[colOffset][rowOffset + 1] = 40; // rock wall
@@ -330,6 +343,9 @@ public class GamePanel extends JPanel implements Runnable {
 
         }
     }
+
+
+
     public void generateMap() {
         mapTileNum = new int[totalCols][totalRows];
         int col,row;
@@ -340,9 +356,12 @@ public class GamePanel extends JPanel implements Runnable {
         
         // END GRASS
         // 2 = end grass tile at DOWN
-        
+        // 22 =  end grass at UP & RIGHT
+
         // WATER WITH END GRASS
-        // 5 = water with grass at RIGHT
+        // 5 = water with grass at LEFT
+        // 51 = water with gras at DOWN
+        
 
         // DARK WATER
         // 3 = dark water tile (with end grass in left)
@@ -354,15 +373,25 @@ public class GamePanel extends JPanel implements Runnable {
         // 41 = end rock wall from RIGHT with water 
         // 411 = is water (the water under the right end wall)
 
+        //BRIDGE
+        //9 = wood of bridge
+        //91 =bridge
+
         // 11 = end water
 
-        
+
         for ( col = 0; col < totalCols; col++) {
             for ( row = 0; row < totalRows; row++) {
 
                //rightmost outer edges to water tiles
-                if ( col >= totalCols - 8 || row >= totalRows - 8) {
-                    mapTileNum[col][row] = 1; //Water tile
+                if ( col >= totalCols - 11 || row >= totalRows - 8) {
+
+                    //BRIDGE line
+                    if (row == maxMapRow - 4) {
+                        mapTileNum[col ][maxMapRow - 4] = 91; //bridge      
+                    } else {
+                        mapTileNum[col][row] = 1; //Water tile
+                    }
 
                 } else // Grass tile for playable map + leftmost outer
                 {
@@ -393,9 +422,12 @@ public class GamePanel extends JPanel implements Runnable {
                     }
                 }
                 
-                //MID WALL   96 124
-                RockWallTiles(col, totalCols - 17  ,false,true);
-
+                //MID WALL   96 124 (starts maxrow - 14 * - 13)
+                if (col <= maxMapCol - 4) {
+                RockWallTiles(col, totalCols - 17  ,false,true, false);
+                } else {
+                    RockWallTiles(col, totalCols - 17  ,false,true, true);
+                }
             }
         }
 
@@ -403,12 +435,50 @@ public class GamePanel extends JPanel implements Runnable {
         //rightmost end (lil mountain lol)
         RockWallTiles(totalCols - 13, maxMapRow - 3, true,false);
         AngleBottomRightTiles(totalCols - 12 , maxMapRow - 3 );
+        
+        
+        
+
+       // mapTileNum[totalCols - 11][maxMapRow - 4] = 5; // water with grass at left
+        mapTileNum[totalCols - 11][maxMapRow - 5] = 5; // water with grass at left
+        mapTileNum[totalCols - 12][maxMapRow - 6] = 51; // grass with water at down 
+
+        mapTileNum[totalCols - 13][maxMapRow - 6] = 51; // grass with water at down 
+        mapTileNum[totalCols - 14][maxMapRow - 6] = 51; // grass with water at down 
+
+
+        //to castle
+        for (int i = 6; i <= 10; i++) {
+            mapTileNum[totalCols - 16][maxMapRow - i] = 0; // grass
+        }
+        
+        for (int i = 15; i <= 19; i++) {
+            mapTileNum[totalCols - i][maxMapRow - 6] = 51; // water
+        }
+        
+        //castle surrounding with water
+        int[] waterCols = {15, 13, 12, 14, 17, 18, 19};
+        for (int waterCol : waterCols) {
+            mapTileNum[totalCols - waterCol][maxMapRow - 7] = 1; // water
+            mapTileNum[totalCols - waterCol][maxMapRow - 8] = 1; // water
+            mapTileNum[totalCols - waterCol][maxMapRow - 9] = 1; // water
+            mapTileNum[totalCols - waterCol][maxMapRow - 10] = 1; // water
+            mapTileNum[totalCols - waterCol][maxMapRow - 11] = 1; // water
+            mapTileNum[totalCols - waterCol][maxMapRow - 12] = 1; // water
+            mapTileNum[totalCols - waterCol][maxMapRow - 13] = 1; // water
+            mapTileNum[totalCols - waterCol][maxMapRow - 14] = 1; // water
+            mapTileNum[totalCols - waterCol][maxMapRow - 15] = 1; // water
+
+        }
 
 
         //bottommost
         AngleBottomRightTiles(totalCols - 14 , maxMapRow);
-        /*remove when loop *///mapTileNum[totalCols - 13][maxMapRow] = 5; // water with grass at right
-  
+        mapTileNum[totalCols - 13][maxMapRow] = 5; // water with grass at left
+
+
+        
+
  
     } 
 
@@ -503,6 +573,10 @@ public class GamePanel extends JPanel implements Runnable {
                             tileImage = endGrassTileD;
                         break;
 
+                        case 22 :
+                            tileImage = endGrasstileRU;
+                        break;
+
                         case 11 :
                             tileImage = endWaterTile;
                         break;
@@ -535,6 +609,17 @@ public class GamePanel extends JPanel implements Runnable {
                             tileImage = waterGrasstileR;
                         break;
 
+                        case 51 :
+                            tileImage = waterGrasstileD;
+                        break;
+
+                        case 9 :
+                            tileImage = bridgeWoodTile;
+                        break;
+
+                        case 91 :
+                            tileImage = bridgeTile;
+                        break;
 
                         default:
                             //throw new AssertionError();
@@ -546,12 +631,12 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Draw the castle image at a specific position
         if (castleImage != null) {
-            int castleX = 1/2 * tileSize; // Example x-coordinate (10 tiles from the left)
-            int castleY = 1/2 * tileSize; // Example y-coordinate (10 tiles from the top)
-            int scaledWidth = castleImage.getWidth() * 7; // Scale width by 2
-            int scaledHeight = castleImage.getHeight() * 7; // Scale height by 2
-           //g2d.drawImage(castleImage, castleDrawX - cameraX, castleDrawY - cameraY, scaledWidth, scaledHeight, null);
-            g2d.drawImage(castleImage, castleX - cameraX, castleY - cameraY, scaledWidth, scaledHeight, null);
+            int castleX = 31 * tileSize; // Eg (10 tiles from the left)
+            int castleY = 31 * tileSize; // Eg (10 tiles from the top)
+            int scaledWidth = castleImage.getWidth() * 2;
+            int scaledHeight = castleImage.getHeight() * 2;
+            // g2d.drawImage(castleImage, castleDrawX - cameraX, castleDrawY - cameraY, scaledWidth, scaledHeight, null);
+            g2d.drawImage(castleImage, castleX - cameraX , castleY - cameraY,scaledWidth, scaledHeight, null);
         }
 
         // Draw the player
@@ -596,14 +681,11 @@ public class GamePanel extends JPanel implements Runnable {
             System.out.println("draw time : " + passed);
         }
 
-        //DEBUG2
+        //DEBUG2 
         if (keyHandler.PlayerPos == true) {
-            long drawEnd = System.nanoTime();
-            long passed = drawEnd - drawStart;
-
             g2d.setColor(Color.black);
             g2d.setFont(new Font("Arial", Font.PLAIN, 20));
-            g2d.drawString("Player position: x = " + getPlayer().x / 32 + " tiles, y = " + getPlayer().y / 32 + " tiles", 10, 420);
+            g2d.drawString("Player position: x = " + getPlayer().x / tileSize  + " tiles, y = " + getPlayer().y / tileSize + " tiles", 10, 420);
         }
             
         g2d.dispose();

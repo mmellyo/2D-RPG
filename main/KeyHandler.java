@@ -7,6 +7,10 @@ public class KeyHandler implements KeyListener {
     public boolean upPressed, downPressed, leftPressed, rightPressed;
     //DEBUG1 
     public boolean checkDrawTime = false;
+    GamePanel gamePanel;
+
+    //DEBUG2
+    public boolean PlayerPos = false;
 
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
@@ -30,6 +34,14 @@ public class KeyHandler implements KeyListener {
                 checkDrawTime = true;
             }else {
                 checkDrawTime = false;
+            }
+        }
+        //DEBUG2
+        else if (keyCode == KeyEvent.VK_A) {
+            if (PlayerPos == false) {
+                PlayerPos = true;
+            }else {
+                PlayerPos = false;
             }
         }
 
